@@ -42,7 +42,7 @@ PRIVACY = (
     "• *What we don't store* — Messages, location, contact data, third-party data\n"
     "• *Data handling* — All stored locally in a JSON file, no third-party sharing\n\n"
     "You can delete your data by removing alerts and portfolio entries.\n"
-    "Contact @username for data removal requests."
+    "Contact @Vyxorium for data removal requests."
 )
 
 TERMS = (
