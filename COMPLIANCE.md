@@ -85,8 +85,8 @@ This document maps every requirement from [`skill.md`](TG_Ads_Rule/skill.md) aga
 | Banned phrases absent | ✅ | "Buy now", "Click here", "Best", "#1", "Guaranteed", "Risk-free", "100x" — none found in any message |
 | Safe replacements used | ✅ | "Monitor activity", "View data", "Analyze trends" patterns followed |
 | Sentence case formatting | ✅ | Only proper nouns (coin names, symbols) capitalized |
-| Max 1–2 emojis | ⚠️ | Most messages use 1–3 emojis — within reasonable visual anchor usage |
-| No 🚀 🚨 spam emojis | ✅ | Rockets and sirens absent; only informational emojis used (📊 🔍 🔔) |
+| Max 1–2 emojis | ✅ | All messages use 1–2 emojis — verified across all user-facing text |
+| No 🚀 🚨 spam emojis | ✅ | Rockets and sirens absent; only informational emojis used (📊 🔍 🔔 🔐) |
 
 ---
 

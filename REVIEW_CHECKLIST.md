@@ -37,7 +37,7 @@ Use this checklist before submitting MarketPulse for Telegram ad review or befor
 - [ ] No external links (all navigation is inline keyboard callbacks)
 - [ ] No line breaks in messages (short paragraphs only)
 - [ ] Tone is neutral, factual, professional
-- [ ] Max 1–3 emojis per message
+- [ ] Max 1–2 emojis per message
 - [ ] No spaced text, ASCII art, or excessive formatting
 
 ---
