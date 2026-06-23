@@ -1,64 +1,66 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 def home_keyboard():
     buttons = [
-        [InlineKeyboardButton("🔍 Price Check", callback_data="price")],
+        [InlineKeyboardButton(text="🔍 Price Check", callback_data="price")],
+        [InlineKeyboardButton(text="📖 How to Use", callback_data="howto")],
         [
-            InlineKeyboardButton("🏆 Top Coins", callback_data="top"),
-            InlineKeyboardButton("🔔 Alerts", callback_data="alerts"),
+            InlineKeyboardButton(text="🏆 Top Coins", callback_data="top"),
+            InlineKeyboardButton(text="🔔 Alerts", callback_data="alerts"),
         ],
         [
-            InlineKeyboardButton("📊 Portfolio", callback_data="portfolio"),
-            InlineKeyboardButton("ℹ️ Help", callback_data="help"),
+            InlineKeyboardButton(text="📊 Portfolio", callback_data="portfolio"),
+            InlineKeyboardButton(text="ℹ️ Help", callback_data="help"),
         ],
         [
-            InlineKeyboardButton("🔐 Privacy", callback_data="privacy"),
-            InlineKeyboardButton("©️ Terms", callback_data="terms"),
+            InlineKeyboardButton(text="🔐 Privacy", callback_data="privacy"),
+            InlineKeyboardButton(text="📜 Terms", callback_data="terms"),
         ],
-        [InlineKeyboardButton("📖 How to Use", callback_data="howto")],
     ]
-    return InlineKeyboardMarkup(buttons)
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def home_keyboard_colored():
     buttons = [
-        [InlineKeyboardButton("🔍 Price Check", callback_data="price", style="primary")],
-        [InlineKeyboardButton("📖 How to Use", callback_data="howto", style="success")],
+        [InlineKeyboardButton(text="🔍 Price Check", callback_data="price", style="primary")],
+        [InlineKeyboardButton(text="📖 How to Use", callback_data="howto", style="success")],
         [
-            InlineKeyboardButton("🏆 Top Coins", callback_data="top", style="primary"),
-            InlineKeyboardButton("🔔 Alerts", callback_data="alerts", style="primary"),
+            InlineKeyboardButton(text="🏆 Top Coins", callback_data="top", style="primary"),
+            InlineKeyboardButton(text="🔔 Alerts", callback_data="alerts", style="primary"),
         ],
         [
-            InlineKeyboardButton("📊 Portfolio", callback_data="portfolio", style="primary"),
-            InlineKeyboardButton("ℹ️ Help", callback_data="help", style="primary"),
+            InlineKeyboardButton(text="📊 Portfolio", callback_data="portfolio", style="primary"),
+            InlineKeyboardButton(text="ℹ️ Help", callback_data="help", style="primary"),
         ],
         [
-            InlineKeyboardButton("🔐 Privacy", callback_data="privacy", style="primary"),
-            InlineKeyboardButton("📜 Terms", callback_data="terms", style="primary"),
+            InlineKeyboardButton(text="🔐 Privacy", callback_data="privacy", style="primary"),
+            InlineKeyboardButton(text="📜 Terms", callback_data="terms", style="primary"),
         ],
     ]
-    return InlineKeyboardMarkup(buttons)
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def back_home_keyboard():
-    buttons = [[InlineKeyboardButton("← Back to Dashboard", callback_data="home")]]
-    return InlineKeyboardMarkup(buttons)
+    buttons = [[InlineKeyboardButton(text="← Back to Dashboard", callback_data="home")]]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def portfolio_keyboard():
     buttons = [
         [
-            InlineKeyboardButton("✚ Add Holding", callback_data="portfolio_add", style="primary"),
-            InlineKeyboardButton("📋 Example", callback_data="portfolio_example", style="success"),
+            InlineKeyboardButton(text="✚ Add Holding", callback_data="portfolio_add", style="primary"),
+            InlineKeyboardButton(text="📋 Example", callback_data="portfolio_example", style="success"),
         ],
-        [InlineKeyboardButton("← Back", callback_data="home")],
+        [InlineKeyboardButton(text="← Back", callback_data="home")],
     ]
-    return InlineKeyboardMarkup(buttons)
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def alerts_keyboard():
     buttons = [
-        [InlineKeyboardButton("✚ New Alert", callback_data="alert_new", style="primary")],
-        [InlineKeyboardButton("📋 Example", callback_data="alert_example", style="success")],
-        [InlineKeyboardButton("← Back", callback_data="home")],
+        [
+            InlineKeyboardButton(text="✚ New Alert", callback_data="alert_new", style="primary"),
+            InlineKeyboardButton(text="📋 Example", callback_data="alert_example", style="success"),
+        ],
+        [InlineKeyboardButton(text="← Back", callback_data="home")],
     ]
-    return InlineKeyboardMarkup(buttons)
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def price_coins_keyboard():
     coins = [
@@ -69,17 +71,17 @@ def price_coins_keyboard():
         ("DOGE", "dogecoin"),
     ]
     buttons = [
-        [InlineKeyboardButton(name, callback_data=f"price_coin:{cid}") for name, cid in coins[:3]],
-        [InlineKeyboardButton(name, callback_data=f"price_coin:{cid}") for name, cid in coins[3:]],
-        [InlineKeyboardButton("← Back", callback_data="home")],
+        [InlineKeyboardButton(text=name, callback_data=f"price_coin:{cid}") for name, cid in coins[:3]],
+        [InlineKeyboardButton(text=name, callback_data=f"price_coin:{cid}") for name, cid in coins[3:]],
+        [InlineKeyboardButton(text="← Back", callback_data="home")],
     ]
-    return InlineKeyboardMarkup(buttons)
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 def confirm_keyboard(action, data):
     buttons = [
         [
-            InlineKeyboardButton("✅ Confirm", callback_data=f"{action}_yes:{data}"),
-            InlineKeyboardButton("❌ Cancel", callback_data=f"{action}_no:{data}"),
+            InlineKeyboardButton(text="✅ Confirm", callback_data=f"{action}_yes:{data}"),
+            InlineKeyboardButton(text="❌ Cancel", callback_data=f"{action}_no:{data}"),
         ]
     ]
-    return InlineKeyboardMarkup(buttons)
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

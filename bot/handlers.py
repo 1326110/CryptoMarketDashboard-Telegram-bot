@@ -1,13 +1,8 @@
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    CallbackQueryHandler,
-    MessageHandler,
-    filters,
-    ContextTypes,
-)
+from aiogram import Router, F
+from aiogram.filters import Command, CommandObject
+from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram import Bot
 
 import bot.messages as msg
 import bot.keyboards as kb
@@ -16,71 +11,73 @@ import bot.database as db
 
 logger = logging.getLogger(__name__)
 
+router = Router()
 USER_STATE = {}
+USER_DATA = {}
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        msg.WELCOME, parse_mode="Markdown", reply_markup=kb.home_keyboard_colored()
+@router.message(Command("start"))
+async def start(message: Message):
+    await message.answer(
+        msg.WELCOME, reply_markup=kb.home_keyboard_colored()
     )
 
-async def home(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    await query.edit_message_text(
-        msg.HOME_MENU, parse_mode="Markdown", reply_markup=kb.home_keyboard_colored()
+@router.callback_query(F.data == "home")
+async def home(callback_query: CallbackQuery):
+    await callback_query.answer()
+    await callback_query.message.edit_text(
+        msg.HOME_MENU, reply_markup=kb.home_keyboard_colored()
     )
 
-async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.callback_query:
-        query = update.callback_query
-        await query.answer()
-        await query.edit_message_text(
-            msg.HELP, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+@router.callback_query(F.data == "help")
+@router.message(Command("help"))
+async def help_cmd(event: Message | CallbackQuery):
+    if isinstance(event, CallbackQuery):
+        await event.answer()
+        await event.message.edit_text(
+            msg.HELP, reply_markup=kb.back_home_keyboard()
         )
     else:
-        await update.message.reply_text(
-            msg.HELP, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+        await event.answer(
+            msg.HELP, reply_markup=kb.back_home_keyboard()
         )
 
-async def price_prompt(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    USER_STATE[update.effective_user.id] = "awaiting_price"
-    await query.edit_message_text(
-        msg.PRICE_PROMPT, parse_mode="Markdown", reply_markup=kb.price_coins_keyboard()
+@router.callback_query(F.data == "price")
+async def price_prompt(callback_query: CallbackQuery):
+    await callback_query.answer()
+    USER_STATE[callback_query.from_user.id] = "awaiting_price"
+    await callback_query.message.edit_text(
+        msg.PRICE_PROMPT, reply_markup=kb.price_coins_keyboard()
     )
 
-async def price_coin_quick(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    coin_id = query.data.split(":", 1)[1]
-    await _show_price(update, context, coin_id)
+@router.callback_query(F.data.startswith("price_coin:"))
+async def price_coin_quick(callback_query: CallbackQuery):
+    await callback_query.answer()
+    coin_id = callback_query.data.split(":", 1)[1]
+    await _show_price(callback_query, coin_id)
 
-async def price_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not context.args:
-        await update.message.reply_text(
+@router.message(Command("price"))
+async def price_command(message: Message, command: CommandObject):
+    coin = command.args
+    if not coin:
+        await message.answer(
             msg.PRICE_PROMPT,
-            parse_mode="Markdown",
             reply_markup=kb.back_home_keyboard(),
         )
         return
-    coin = " ".join(context.args)
-    await _show_price(update, context, coin)
+    await _show_price(message, coin)
 
-async def handle_price_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
-    if USER_STATE.get(uid) == "awaiting_price":
-        USER_STATE[uid] = None
-        await _show_price(update, context, update.message.text)
+async def handle_price_input(message: Message):
+    await _show_price(message, message.text)
 
-async def _show_price(update: Update, context: ContextTypes.DEFAULT_TYPE, coin: str):
+async def _show_price(event: Message | CallbackQuery, coin: str):
     info = api.search_coins(coin)
     if not info:
         text = msg.PRICE_ERROR
-        if update.callback_query:
-            await update.callback_query.edit_message_text(text, reply_markup=kb.back_home_keyboard())
+        reply = kb.back_home_keyboard()
+        if isinstance(event, CallbackQuery):
+            await event.message.edit_text(text, reply_markup=reply)
         else:
-            await update.message.reply_text(text, reply_markup=kb.back_home_keyboard())
+            await event.answer(text, reply_markup=reply)
         return
 
     detail = api.get_price_with_detail(info["id"])
@@ -101,28 +98,25 @@ async def _show_price(update: Update, context: ContextTypes.DEFAULT_TYPE, coin: 
             rank=detail.get("market_cap_rank", "N/A"),
         )
 
-    if update.callback_query:
-        await update.callback_query.edit_message_text(
-            text, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
-        )
+    reply = kb.back_home_keyboard()
+    if isinstance(event, CallbackQuery):
+        await event.message.edit_text(text, reply_markup=reply)
     else:
-        await update.message.reply_text(
-            text, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
-        )
+        await event.answer(text, reply_markup=reply)
 
-async def howto(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    await query.edit_message_text(
-        msg.HOWTO, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+@router.callback_query(F.data == "howto")
+async def howto(callback_query: CallbackQuery):
+    await callback_query.answer()
+    await callback_query.message.edit_text(
+        msg.HOWTO, reply_markup=kb.back_home_keyboard()
     )
 
-async def top_coins(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
+@router.callback_query(F.data == "top")
+async def top_coins(callback_query: CallbackQuery):
+    await callback_query.answer()
     data = api.get_top_coins(10)
     if not data:
-        await query.edit_message_text(
+        await callback_query.message.edit_text(
             msg.ERROR_GENERIC, reply_markup=kb.back_home_keyboard()
         )
         return
@@ -142,20 +136,19 @@ async def top_coins(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         )
     lines.append(msg.TOP_FOOTER)
-    await query.edit_message_text(
-        "".join(lines), parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+    await callback_query.message.edit_text(
+        "".join(lines), reply_markup=kb.back_home_keyboard()
     )
 
-async def alerts_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    uid = update.effective_user.id
+@router.callback_query(F.data == "alerts")
+async def alerts_menu(callback_query: CallbackQuery):
+    await callback_query.answer()
+    uid = callback_query.from_user.id
     alerts = db.get_alerts(uid)
 
     if not alerts:
-        await query.edit_message_text(
+        await callback_query.message.edit_text(
             msg.ALERT_NO_ALERTS,
-            parse_mode="Markdown",
             reply_markup=kb.alerts_keyboard(),
         )
         return
@@ -171,109 +164,111 @@ async def alerts_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         )
         buttons.append(
-            [InlineKeyboardButton(f"\u274c Remove {a['coin_name']}", callback_data=f"alert_remove:{i}")]
+            [InlineKeyboardButton(text=f"\u274c Remove {a['coin_name']}", callback_data=f"alert_remove:{i}")]
         )
-    buttons.append([InlineKeyboardButton("\u2190 Back", callback_data="home")])
-    await query.edit_message_text(
+    buttons.append([InlineKeyboardButton(text="\u2190 Back", callback_data="home")])
+    await callback_query.message.edit_text(
         "".join(lines),
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(buttons),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
     )
 
-async def alert_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if len(context.args) < 2:
-        await update.message.reply_text(
+@router.message(Command("alert"))
+async def alert_command(message: Message, command: CommandObject):
+    args = command.args
+    if not args:
+        await message.answer(
             "Usage: `/alert <coin> <target_price>`\n\n"
             "Example: `/alert bitcoin 45000`",
-            parse_mode="Markdown",
         )
         return
-    coin = context.args[0]
+    parts = args.split()
+    if len(parts) < 2:
+        await message.answer(
+            "⚠️ Please provide both a coin and target price.\n\n"
+            "Example: `/alert bitcoin 45000`",
+        )
+        return
+    coin = parts[0]
     try:
-        target = float(context.args[1].replace(",", "").replace("$", ""))
+        target = float(parts[1].replace(",", "").replace("$", ""))
     except ValueError:
-        await update.message.reply_text(
+        await message.answer(
             "⚠️ Invalid target price. Example: `/alert bitcoin 45000`",
-            parse_mode="Markdown",
         )
         return
     info = api.search_coins(coin)
     if not info:
-        await update.message.reply_text(
+        await message.answer(
             msg.ALERT_ERROR, reply_markup=kb.back_home_keyboard()
         )
         return
     p = api.get_price(info["id"])
     current = p.get("usd", 0) if p else 0
-    db.add_alert(update.effective_user.id, info["id"], info["name"], info["symbol"], target)
-    await update.message.reply_text(
+    db.add_alert(message.from_user.id, info["id"], info["name"], info["symbol"], target)
+    await message.answer(
         msg.ALERT_CREATED.format(
             name=info["name"],
             symbol=info["symbol"].upper(),
             target=target,
             current=current,
         ),
-        parse_mode="Markdown",
         reply_markup=kb.home_keyboard_colored(),
     )
 
-async def alert_new(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    USER_STATE[update.effective_user.id] = "awaiting_alert_coin"
-    await query.edit_message_text(
-        msg.ALERT_SETUP, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+@router.callback_query(F.data == "alert_new")
+async def alert_new(callback_query: CallbackQuery):
+    await callback_query.answer()
+    USER_STATE[callback_query.from_user.id] = "awaiting_alert_coin"
+    await callback_query.message.edit_text(
+        msg.ALERT_SETUP, reply_markup=kb.back_home_keyboard()
     )
 
-async def alert_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    uid = update.effective_user.id
-    parts = query.data.split(":")
-    idx = int(parts[1])
+@router.callback_query(F.data.startswith("alert_remove:"))
+async def alert_remove(callback_query: CallbackQuery):
+    await callback_query.answer()
+    uid = callback_query.from_user.id
+    idx = int(callback_query.data.split(":")[1])
     removed = db.remove_alert(uid, idx)
     if removed:
-        await query.edit_message_text(
+        await callback_query.message.edit_text(
             msg.ALERT_REMOVED.format(name=removed["coin_name"]),
-            parse_mode="Markdown",
             reply_markup=kb.alerts_keyboard(),
         )
     else:
-        await query.edit_message_text(
+        await callback_query.message.edit_text(
             msg.ERROR_GENERIC, reply_markup=kb.back_home_keyboard()
         )
 
-async def handle_alert_coin(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
+async def handle_alert_coin(message: Message):
+    uid = message.from_user.id
     if USER_STATE.get(uid) == "awaiting_alert_coin":
-        coin = update.message.text.strip()
+        coin = message.text.strip()
         info = api.search_coins(coin)
         if not info:
-            await update.message.reply_text(
+            await message.answer(
                 msg.ALERT_ERROR, reply_markup=kb.back_home_keyboard()
             )
             return
-        context.user_data["alert_coin"] = info
+        USER_DATA[uid] = info
         USER_STATE[uid] = "awaiting_alert_target"
-        await update.message.reply_text(
+        await message.answer(
             msg.ALERT_COIN_RECEIVED.format(coin=info["name"]),
-            parse_mode="Markdown",
             reply_markup=kb.back_home_keyboard(),
         )
 
-async def handle_alert_target(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
+async def handle_alert_target(message: Message):
+    uid = message.from_user.id
     if USER_STATE.get(uid) == "awaiting_alert_target":
         try:
-            target = float(update.message.text.strip().replace(",", "").replace("$", ""))
+            target = float(message.text.strip().replace(",", "").replace("$", ""))
         except ValueError:
-            await update.message.reply_text("Please enter a valid number.")
+            await message.answer("Please enter a valid number.")
             return
 
-        info = context.user_data.get("alert_coin")
+        info = USER_DATA.get(uid)
         if not info:
             USER_STATE[uid] = None
-            await update.message.reply_text(msg.ERROR_GENERIC)
+            await message.answer(msg.ERROR_GENERIC)
             return
 
         p = api.get_price(info["id"])
@@ -281,41 +276,40 @@ async def handle_alert_target(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         db.add_alert(uid, info["id"], info["name"], info["symbol"], target)
         USER_STATE[uid] = None
-        await update.message.reply_text(
+        USER_DATA.pop(uid, None)
+        await message.answer(
             msg.ALERT_CREATED.format(
                 name=info["name"],
                 symbol=info["symbol"].upper(),
                 target=target,
                 current=current,
             ),
-            parse_mode="Markdown",
             reply_markup=kb.home_keyboard_colored(),
         )
 
-async def alert_example(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    await query.edit_message_text(
-        msg.ALERT_EXAMPLE, parse_mode="Markdown", reply_markup=kb.alerts_keyboard()
+@router.callback_query(F.data == "alert_example")
+async def alert_example(callback_query: CallbackQuery):
+    await callback_query.answer()
+    await callback_query.message.edit_text(
+        msg.ALERT_EXAMPLE, reply_markup=kb.alerts_keyboard()
     )
 
-async def portfolio_example(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    await query.edit_message_text(
-        msg.PORTFOLIO_EXAMPLE, parse_mode="Markdown", reply_markup=kb.portfolio_keyboard()
+@router.callback_query(F.data == "portfolio_example")
+async def portfolio_example(callback_query: CallbackQuery):
+    await callback_query.answer()
+    await callback_query.message.edit_text(
+        msg.PORTFOLIO_EXAMPLE, reply_markup=kb.portfolio_keyboard()
     )
 
-async def portfolio_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    uid = update.effective_user.id
+@router.callback_query(F.data == "portfolio")
+async def portfolio_menu(callback_query: CallbackQuery):
+    await callback_query.answer()
+    uid = callback_query.from_user.id
     holdings = db.get_portfolio(uid)
 
     if not holdings:
-        await query.edit_message_text(
+        await callback_query.message.edit_text(
             msg.PORTFOLIO_EMPTY,
-            parse_mode="Markdown",
             reply_markup=kb.portfolio_keyboard(),
         )
         return
@@ -335,58 +329,55 @@ async def portfolio_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = msg.PORTFOLIO_VIEW.format(holdings="".join(lines), total=total)
     buttons.append(
         [
-            InlineKeyboardButton("\u2795 Add", callback_data="portfolio_add"),
-            InlineKeyboardButton("\u2796 Remove", callback_data="portfolio_remove"),
+            InlineKeyboardButton(text="\u2795 Add", callback_data="portfolio_add"),
+            InlineKeyboardButton(text="\u2796 Remove", callback_data="portfolio_remove"),
         ]
     )
-    buttons.append([InlineKeyboardButton("\u2190 Back", callback_data="home")])
-    await query.edit_message_text(
+    buttons.append([InlineKeyboardButton(text="\u2190 Back", callback_data="home")])
+    await callback_query.message.edit_text(
         text,
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(buttons),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
     )
 
-async def portfolio_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    USER_STATE[update.effective_user.id] = "awaiting_portfolio_coin"
-    await query.edit_message_text(
+@router.callback_query(F.data == "portfolio_add")
+async def portfolio_add(callback_query: CallbackQuery):
+    await callback_query.answer()
+    USER_STATE[callback_query.from_user.id] = "awaiting_portfolio_coin"
+    await callback_query.message.edit_text(
         msg.PORTFOLIO_ADD_COIN,
-        parse_mode="Markdown",
         reply_markup=kb.back_home_keyboard(),
     )
 
-async def handle_portfolio_coin(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
+async def handle_portfolio_coin(message: Message):
+    uid = message.from_user.id
     if USER_STATE.get(uid) == "awaiting_portfolio_coin":
-        coin = update.message.text.strip()
+        coin = message.text.strip()
         info = api.search_coins(coin)
         if not info:
-            await update.message.reply_text(
+            await message.answer(
                 msg.ALERT_ERROR, reply_markup=kb.back_home_keyboard()
             )
             return
-        context.user_data["portfolio_coin"] = info
+        USER_DATA[uid] = info
         USER_STATE[uid] = "awaiting_portfolio_amount"
-        await update.message.reply_text(
+        await message.answer(
             msg.PORTFOLIO_ADD_AMOUNT.format(name=info["name"]),
-            parse_mode="Markdown",
             reply_markup=kb.back_home_keyboard(),
         )
 
-async def handle_portfolio_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
+async def handle_portfolio_amount(message: Message):
+    uid = message.from_user.id
     if USER_STATE.get(uid) == "awaiting_portfolio_amount":
         try:
-            amount = float(update.message.text.strip().replace(",", ""))
+            amount = float(message.text.strip().replace(",", ""))
         except ValueError:
-            await update.message.reply_text("Please enter a valid number.")
+            await message.answer("Please enter a valid number.")
             return
 
-        info = context.user_data.get("portfolio_coin")
+        info = USER_DATA.get(uid)
         if not info:
             USER_STATE[uid] = None
-            await update.message.reply_text(msg.ERROR_GENERIC)
+            await message.answer(msg.ERROR_GENERIC)
             return
 
         p = api.get_price(info["id"])
@@ -395,27 +386,26 @@ async def handle_portfolio_amount(update: Update, context: ContextTypes.DEFAULT_
 
         db.add_holding(uid, info["id"], info["name"], info["symbol"], amount)
         USER_STATE[uid] = None
-        await update.message.reply_text(
+        USER_DATA.pop(uid, None)
+        await message.answer(
             msg.PORTFOLIO_ADD_CONFIRM.format(
                 amount=amount,
                 symbol=info["symbol"].upper(),
                 name=info["name"],
                 value=value,
             ),
-            parse_mode="Markdown",
             reply_markup=kb.home_keyboard_colored(),
         )
 
-async def portfolio_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    uid = update.effective_user.id
+@router.callback_query(F.data == "portfolio_remove")
+async def portfolio_remove(callback_query: CallbackQuery):
+    await callback_query.answer()
+    uid = callback_query.from_user.id
     holdings = db.get_portfolio(uid)
 
     if not holdings:
-        await query.edit_message_text(
+        await callback_query.message.edit_text(
             msg.PORTFOLIO_EMPTY,
-            parse_mode="Markdown",
             reply_markup=kb.portfolio_keyboard(),
         )
         return
@@ -425,80 +415,81 @@ async def portfolio_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         buttons.append(
             [
                 InlineKeyboardButton(
-                    f"\u274c {h['coin_name']} ({h['amount']} {h['symbol'].upper()})",
+                    text=f"\u274c {h['coin_name']} ({h['amount']} {h['symbol'].upper()})",
                     callback_data=f"portfolio_remove_idx:{i}",
                 )
             ]
         )
-    buttons.append([InlineKeyboardButton("\u2190 Back", callback_data="portfolio")])
-    await query.edit_message_text(
+    buttons.append([InlineKeyboardButton(text="\u2190 Back", callback_data="portfolio")])
+    await callback_query.message.edit_text(
         msg.PORTFOLIO_REMOVE_PROMPT,
-        parse_mode="Markdown",
-        reply_markup=InlineKeyboardMarkup(buttons),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
     )
 
-async def portfolio_remove_idx(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    uid = update.effective_user.id
-    idx = int(query.data.split(":")[1])
+@router.callback_query(F.data.startswith("portfolio_remove_idx:"))
+async def portfolio_remove_idx(callback_query: CallbackQuery):
+    await callback_query.answer()
+    uid = callback_query.from_user.id
+    idx = int(callback_query.data.split(":")[1])
     removed = db.remove_holding(uid, idx)
     if removed:
-        await query.edit_message_text(
+        await callback_query.message.edit_text(
             msg.PORTFOLIO_REMOVED.format(name=removed["coin_name"]),
-            parse_mode="Markdown",
             reply_markup=kb.back_home_keyboard(),
         )
     else:
-        await query.edit_message_text(
+        await callback_query.message.edit_text(
             msg.ERROR_GENERIC, reply_markup=kb.back_home_keyboard()
         )
 
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    uid = update.effective_user.id
+@router.message(F.text)
+async def handle_text(message: Message):
+    uid = message.from_user.id
     state = USER_STATE.get(uid)
 
     if state == "awaiting_price":
-        await handle_price_input(update, context)
+        await handle_price_input(message)
     elif state == "awaiting_alert_coin":
-        await handle_alert_coin(update, context)
+        await handle_alert_coin(message)
     elif state == "awaiting_alert_target":
-        await handle_alert_target(update, context)
+        await handle_alert_target(message)
     elif state == "awaiting_portfolio_coin":
-        await handle_portfolio_coin(update, context)
+        await handle_portfolio_coin(message)
     elif state == "awaiting_portfolio_amount":
-        await handle_portfolio_amount(update, context)
+        await handle_portfolio_amount(message)
     else:
-        await update.message.reply_text(
+        await message.answer(
             "Use the menu below to navigate 👇",
             reply_markup=kb.home_keyboard_colored(),
         )
 
-async def privacy_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.callback_query:
-        query = update.callback_query
-        await query.answer()
-        await query.edit_message_text(
-            msg.PRIVACY, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+@router.callback_query(F.data == "privacy")
+@router.message(Command("privacy"))
+async def privacy_cmd(event: Message | CallbackQuery):
+    if isinstance(event, CallbackQuery):
+        await event.answer()
+        await event.message.edit_text(
+            msg.PRIVACY, reply_markup=kb.back_home_keyboard()
         )
     else:
-        await update.message.reply_text(
-            msg.PRIVACY, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+        await event.answer(
+            msg.PRIVACY, reply_markup=kb.back_home_keyboard()
         )
 
-async def terms_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.callback_query:
-        query = update.callback_query
-        await query.answer()
-        await query.edit_message_text(
-            msg.TERMS, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+@router.callback_query(F.data == "terms")
+@router.message(Command("terms"))
+async def terms_cmd(event: Message | CallbackQuery):
+    if isinstance(event, CallbackQuery):
+        await event.answer()
+        await event.message.edit_text(
+            msg.TERMS, reply_markup=kb.back_home_keyboard()
         )
     else:
-        await update.message.reply_text(
-            msg.TERMS, parse_mode="Markdown", reply_markup=kb.back_home_keyboard()
+        await event.answer(
+            msg.TERMS, reply_markup=kb.back_home_keyboard()
         )
 
-async def alert_checker(app: Application):
+async def alert_checker(bot: Bot):
     import asyncio
     from config import CHECK_INTERVAL
 
@@ -517,7 +508,7 @@ async def alert_checker(app: Application):
                     current = p.get("usd", 0)
                     if current >= a["target"]:
                         try:
-                            await app.bot.send_message(
+                            await bot.send_message(
                                 uid,
                                 msg.ALERT_TRIGGERED.format(
                                     name=a["coin_name"],
@@ -525,7 +516,6 @@ async def alert_checker(app: Application):
                                     target=a["target"],
                                     price=current,
                                 ),
-                                parse_mode="Markdown",
                             )
                             triggered.append(i)
                         except Exception:
