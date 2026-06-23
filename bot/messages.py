@@ -1,7 +1,7 @@
 WELCOME = (
     "✨ Welcome to *MarketPulse* — your real-time crypto market dashboard.\n\n"
     "I help you track prices, monitor trends, and stay informed.\n\n"
-    "⚡ *Quick Start*\n"
+    "*Quick Start*\n"
     "• Check any coin price instantly\n"
     "• View top market movers\n"
     "• Set custom price alerts\n"
@@ -13,19 +13,19 @@ HOME_MENU = "🏠 *Dashboard* — what would you like to do?"
 
 HOWTO = (
     "📖 *How to Use MarketPulse*\n\n"
-    "🔍 *Price Check* — Tap to search any crypto's price, 24h change, and market cap. You can also tap BTC/ETH/SOL/XRP/DOGE for instant results.\n\n"
-    "🏆 *Top Coins* — Shows the top 10 cryptocurrencies ranked by market cap with current price and 24h change.\n\n"
-    "🔔 *Alerts* — Set a target price for any coin. You'll get a notification when the price crosses your target. Use `/alert bitcoin 45000` for speed.\n\n"
-    "📊 *Portfolio* — Log how much of each coin you hold. The bot calculates total value using live prices.\n\n"
-    "ℹ️ *Help* — Lists all available commands.\n\n"
-    "🔒 *Privacy / ©️ Terms* — How your data is handled and terms of use.\n\n"
+    "*Price Check* — Tap to search any crypto's price, 24h change, and market cap. You can also tap BTC/ETH/SOL/XRP/DOGE for instant results.\n\n"
+    "*Top Coins* — Shows the top 10 cryptocurrencies ranked by market cap with current price and 24h change.\n\n"
+    "*Alerts* — Set a target price for any coin. You'll get a notification when the price crosses your target. Use `/alert bitcoin 45000` for speed.\n\n"
+    "*Portfolio* — Log how much of each coin you hold. The bot calculates total value using live prices.\n\n"
+    "*Help* — Lists all available commands.\n\n"
+    "*Privacy / Terms* — How your data is handled and terms of use.\n\n"
     "_All data from CoinGecko • updated every minute_"
 )
 
 HELP = (
     "ℹ️ *About MarketPulse*\n\n"
     "I monitor cryptocurrency market data in real time.\n\n"
-    "📊 *Features*\n"
+    "*Features*\n"
     "• `/price <coin>` — check current price\n"
     "• `/top` — top coins by market cap\n"
     "• `/alert <coin> <target>` — set a price alert\n"
@@ -36,37 +36,21 @@ HELP = (
 )
 
 PRIVACY = (
-    "🔒 *Privacy Policy*\n\n"
+    "🔐 *Privacy Policy*\n\n"
     "MarketPulse is designed with your privacy in mind.\n\n"
-    "📌 *What we store*\n"
-    "• Your Telegram user ID (for alerts and portfolio)\n"
-    "• Alert targets you set\n"
-    "• Portfolio holdings you enter\n\n"
-    "📌 *What we don't store*\n"
-    "• Messages or personal conversations\n"
-    "• Location or contact data\n"
-    "• Any data from third-party services\n\n"
-    "📌 *Data handling*\n"
-    "• All data stored locally in a JSON file\n"
-    "• No data shared with third parties\n"
-    "• You can delete your data by removing alerts and portfolio entries\n\n"
+    "*What we store* — Your Telegram user ID, alert targets, portfolio holdings\n"
+    "• *What we don't store* — Messages, location, contact data, third-party data\n"
+    "• *Data handling* — All stored locally in a JSON file, no third-party sharing\n\n"
+    "You can delete your data by removing alerts and portfolio entries.\n"
     "Contact @username for data removal requests."
 )
 
 TERMS = (
-    "©️ *Terms of Use*\n\n"
+    "📜 *Terms of Use*\n\n"
     "By using MarketPulse, you agree to the following:\n\n"
-    "📌 *Service*\n"
-    "• MarketPulse provides cryptocurrency market data for informational purposes only\n"
-    "• Data is sourced from public APIs (CoinGecko) and may have delays\n\n"
-    "📌 *Not Financial Advice*\n"
-    "• All information is for reference only\n"
-    "• No content constitutes financial or investment advice\n"
-    "• Always do your own research before making decisions\n\n"
-    "📌 *Limitations*\n"
-    "• Service provided \"as is\" without warranties\n"
-    "• We may suspend or modify the service at any time\n"
-    "• Not responsible for API downtime or data inaccuracies\n\n"
+    "*Service* — Provides cryptocurrency market data for informational purposes only\n"
+    "• *Not Financial Advice* — All information is for reference; no content constitutes investment advice\n"
+    "• *Limitations* — Service provided \"as is\"; not responsible for API downtime or data inaccuracies\n\n"
     "Use `/help` for support."
 )
 
@@ -74,10 +58,10 @@ PRICE_PROMPT = "🔍 Tap a coin below or type a name/symbol (e.g., `bitcoin` or 
 
 PRICE_RESULT = (
     "📊 *{name}* ({symbol})\n\n"
-    "💵 Price: `${price:,.{decimals}f}`\n"
-    "📈 24h Change: `{change_24h:+.2f}%` {change_emoji}\n"
-    "📊 Market Cap: `${market_cap:,.0f}`\n"
-    "📍 Rank: `#{rank}`\n\n"
+    "Price: `${price:,.{decimals}f}`\n"
+    "24h Change: `{change_24h:+.2f}%` {change_emoji}\n"
+    "Market Cap: `${market_cap:,.0f}`\n"
+    "Rank: `#{rank}`\n\n"
     "_Data from CoinGecko_"
 )
 
@@ -95,9 +79,9 @@ ALERT_COIN_RECEIVED = "Got it — *{coin}*. Now enter your target price in USD:\
 
 ALERT_CREATED = (
     "✅ Alert created!\n\n"
-    "📎 *{name}* ({symbol})\n"
-    "🎯 Target: `${target:,.2f}`\n"
-    "🔍 Current: `${current:,.2f}`\n\n"
+    "*{name}* ({symbol})\n"
+    "Target: `${target:,.2f}`\n"
+    "Current: `${current:,.2f}`\n\n"
     "I'll notify you when the price crosses this level."
 )
 
@@ -115,7 +99,7 @@ ALERT_NO_ALERTS = "ℹ️ You have no active price alerts. Use `/alert <coin> <t
 ALERT_EXAMPLE = (
     "📋 *Alert Example*\n\n"
     "When you set alerts, they appear like this:\n\n"
-    "🔔 *Your Active Alerts*\n\n"
+    "*Your Active Alerts*\n\n"
     "• Bitcoin — target `$45,000` (current: `$62,296`)\n"
     "• Ethereum — target `$3,000` (current: `$1,653`)\n\n"
     "Tap ➕ New Alert to set your own."
@@ -137,7 +121,7 @@ PORTFOLIO_EMPTY = (
 PORTFOLIO_EXAMPLE = (
     "📋 *Portfolio Example*\n\n"
     "When you add holdings, they appear like this:\n\n"
-    "📊 *Your Portfolio*\n\n"
+    "*Your Portfolio*\n\n"
     "• 0.5 BTC — `$31,148.00`\n"
     "• 10 ETH — `$16,528.30`\n"
     "--------------------\n"
@@ -151,15 +135,15 @@ PORTFOLIO_ADD_AMOUNT = "Enter the amount of *{name}* you hold:\n\nExample: `2.5`
 
 PORTFOLIO_ADD_CONFIRM = (
     "✅ Added to portfolio!\n\n"
-    "📎 *{amount} {symbol}* ({name})\n"
-    "💵 Value: `${value:,.2f}`"
+    "*{amount} {symbol}* ({name})\n"
+    "Value: `${value:,.2f}`"
 )
 
 PORTFOLIO_VIEW = (
     "📊 *Your Portfolio*\n\n"
     "{holdings}\n"
     "--------------------\n"
-    "💵 *Total Value: `${total:,.2f}`*"
+    "*Total Value: `${total:,.2f}`*"
 )
 
 PORTFOLIO_ROW = "• *{amount}* {symbol} — `${value:,.2f}`\n"

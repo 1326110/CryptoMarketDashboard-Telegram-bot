@@ -12,7 +12,7 @@ def home_keyboard():
             InlineKeyboardButton("ℹ️ Help", callback_data="help"),
         ],
         [
-            InlineKeyboardButton("🔒 Privacy", callback_data="privacy"),
+            InlineKeyboardButton("🔐 Privacy", callback_data="privacy"),
             InlineKeyboardButton("©️ Terms", callback_data="terms"),
         ],
         [InlineKeyboardButton("📖 How to Use", callback_data="howto")],
@@ -32,8 +32,8 @@ def home_keyboard_colored():
             InlineKeyboardButton("ℹ️ Help", callback_data="help", style="primary"),
         ],
         [
-            InlineKeyboardButton("🔒 Privacy", callback_data="privacy", style="primary"),
-            InlineKeyboardButton("©️ Terms", callback_data="terms", style="primary"),
+            InlineKeyboardButton("🔐 Privacy", callback_data="privacy", style="primary"),
+            InlineKeyboardButton("📜 Terms", callback_data="terms", style="primary"),
         ],
     ]
     return InlineKeyboardMarkup(buttons)
@@ -45,7 +45,7 @@ def back_home_keyboard():
 def portfolio_keyboard():
     buttons = [
         [
-            InlineKeyboardButton("➕ Add Holding", callback_data="portfolio_add", style="primary"),
+            InlineKeyboardButton("✚ Add Holding", callback_data="portfolio_add", style="primary"),
             InlineKeyboardButton("📋 Example", callback_data="portfolio_example", style="success"),
         ],
         [InlineKeyboardButton("← Back", callback_data="home")],
@@ -54,7 +54,7 @@ def portfolio_keyboard():
 
 def alerts_keyboard():
     buttons = [
-        [InlineKeyboardButton("➕ New Alert", callback_data="alert_new", style="primary")],
+        [InlineKeyboardButton("✚ New Alert", callback_data="alert_new", style="primary")],
         [InlineKeyboardButton("📋 Example", callback_data="alert_example", style="success")],
         [InlineKeyboardButton("← Back", callback_data="home")],
     ]
